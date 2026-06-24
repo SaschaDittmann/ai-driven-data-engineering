@@ -69,7 +69,7 @@ Lab instructions are written tool-agnostic where possible, with tool-specific se
 The workshop teaches a **skills-driven methodology** — a structured vibe coding workflow that makes AI reliable and repeatable:
 
 ```
-create-prd → create-tasks → git-worktree → implement-tasks → finalize-tasks → document-learnings
+create-prd → create-tasks → git-worktree → implement-tasks → document-learnings → finalize-tasks
 ```
 
 | Step | Skill | Purpose |
@@ -78,8 +78,8 @@ create-prd → create-tasks → git-worktree → implement-tasks → finalize-ta
 | 2 | `create-tasks` | AI breaks the PRD into vertical task slices |
 | 3 | `git-worktree` | Isolated git branch per feature |
 | 4 | `implement-tasks` | AI implements with tests, docs, and observability |
-| 5 | `finalize-tasks` | Clean up worktree, resolve conflicts, create PR |
-| 6 | `document-learnings` | Capture solutions as searchable knowledge |
+| 5 | `document-learnings` | Capture solutions as searchable knowledge |
+| 6 | `finalize-tasks` | Clean up worktree, resolve conflicts, create PR |
 
 This workflow is the **red thread** through the entire workshop. It is pre-configured in the starter project; the intro session explains the concepts, and each lab applies them.
 
@@ -94,7 +94,7 @@ This workflow is the **red thread** through the entire workshop. It is pre-confi
 **Topics:**
 1. The problem: "Prompt-and-Pray" vs. structured AI workflows
 2. Context engineering: why context quality determines output quality
-3. The AI development workflow: PRD → Tasks → Implement → Finalize → Learn
+3. The AI development workflow: PRD → Tasks → Implement → Learn → Finalize
 4. Project rules files: `CLAUDE.md`, `AGENTS.md`, `.cursorrules` — what they do and why
 5. Skills: how agent skills enforce coding guidelines and standardize workflows
 6. MCP servers: extending AI with external knowledge (Context7 as example)
@@ -142,7 +142,7 @@ This workflow is the **red thread** through the entire workshop. It is pre-confi
 
 **Tool type:** CLI (Claude Code or Antigravity CLI)
 **Environment:** Local (DuckDB)
-**Workflow focus:** `git-worktree` → `implement-tasks` → `finalize-tasks`
+**Workflow focus:** `git-worktree` → `implement-tasks` → `document-learnings` → `finalize-tasks`
 
 **What participants do:**
 1. Create a git worktree for the ingestion feature
@@ -177,7 +177,7 @@ This workflow is the **red thread** through the entire workshop. It is pre-confi
 
 **Tool type:** IDE (Antigravity IDE recommended, Cursor as alternative)
 **Environment:** Local (DuckDB)
-**Workflow focus:** `git-worktree` → `implement-tasks` → `finalize-tasks`
+**Workflow focus:** `git-worktree` → `implement-tasks` → `document-learnings` → `finalize-tasks`
 
 **What participants do:**
 1. Switch to an IDE tool — experience the difference from CLI
@@ -214,7 +214,7 @@ This workflow is the **red thread** through the entire workshop. It is pre-confi
 
 **Tool type:** Participant's choice (CLI or IDE — they've used both by now)
 **Environment:** Local + GCP Playground
-**Workflow focus:** `create-prd` (update) → `create-tasks` → `implement-tasks` → `finalize-tasks`
+**Workflow focus:** `create-prd` (update) → `create-tasks` → `implement-tasks` → `document-learnings` → `finalize-tasks`
 
 **What participants do:**
 1. **Requirements change!** — Update the PRD with cloud requirements:

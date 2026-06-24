@@ -124,8 +124,8 @@ This project uses an AI-assisted development workflow defined in `.agents/skills
 1. **Plan** — `create-prd` to define requirements, `create-tasks` to break them down
 2. **Branch** — `git-worktree` for isolated feature development
 3. **Build** — `implement-tasks` for AI-assisted implementation with tests
-4. **Ship** — `finalize-tasks` to clean up, resolve conflicts, and create PRs
-5. **Learn** — `document-learnings` to capture solutions for future reference
+4. **Learn** — `document-learnings` to capture solutions for future reference
+5. **Ship** — `finalize-tasks` to clean up, resolve conflicts, and create PRs
 
 See `AGENTS.md` for full details.
 

@@ -77,8 +77,8 @@ This project uses a skills-driven AI workflow:
 1. **Plan:** `create-prd` → `create-tasks`
 2. **Branch:** `git-worktree` (isolated feature branches off `development`)
 3. **Build:** `implement-tasks` (code + tests + docs per vertical slice)
-4. **Ship:** `finalize-tasks` (clean up, create PR targeting `development`)
-5. **Learn:** `document-learnings` (capture solutions in `docs/learnings/`)
+4. **Learn:** `document-learnings` (capture solutions in `docs/learnings/`)
+5. **Ship:** `finalize-tasks` (clean up, create PR targeting `development`)
 
 ## Boundaries
 

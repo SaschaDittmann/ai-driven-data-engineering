@@ -47,7 +47,7 @@ The data source is **PokeAPI** — a free, public REST API with a rich, nested d
 
 ## The Journey
 
-The workshop follows a progressive build. Each lab adds one layer to the solution, and each lab reinforces the same AI development workflow: **plan → implement → test → finalize → learn**.
+The workshop follows a progressive build. Each lab adds one layer to the solution, and each lab reinforces the same AI development workflow: **plan → implement → test → learn → finalize**.
 
 ### Intro — Foundations of AI-Driven Development (60 min)
 

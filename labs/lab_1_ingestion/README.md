@@ -2,7 +2,7 @@
 
 Time to build. In this lab you'll use the tasks created in Lab 0 to have your AI assistant implement a complete dlt ingestion pipeline — extracting data from the PokeAPI and loading it into a local DuckDB database.
 
-This is the first time you'll run through the full implementation cycle: **branch → implement → test → finalize**.
+This is the first time you'll run through the full implementation cycle: **branch → implement → test → learn → finalize**.
 
 ## Learning Objectives
 

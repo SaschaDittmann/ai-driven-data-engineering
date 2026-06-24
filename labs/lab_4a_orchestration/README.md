@@ -6,7 +6,7 @@ In this lab you'll orchestrate the full data pipeline (dlt ingestion → dbt tra
 
 ## Learning Objectives
 
-- Use the full AI workflow cycle (PRD → tasks → implement → finalize) for orchestration
+- Use the full AI workflow cycle (PRD → tasks → implement → learn → finalize) for orchestration
 - Build an Airflow DAG that chains dlt ingestion and dbt transformation
 - Provision a Managed Service for Apache Airflow environment using Terraform
 - Deploy DAGs and Airflow Variables to Managed Service for Apache Airflow
