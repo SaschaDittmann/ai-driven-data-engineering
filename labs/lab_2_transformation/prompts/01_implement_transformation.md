@@ -6,7 +6,7 @@ Copy the following prompt into your AI coding assistant:
 
 Use skill: implement-tasks
 
-Read the tasks in `docs/tasks/` and implement all **transformation-related tasks**. Build a dbt project that transforms the raw data in DuckDB into clean staging models and analytical marts.
+Read the tasks in `docs/tasks/` and implement all **transformation-related tasks** (everything related to dbt, staging models, and marts). Build a dbt project that transforms the raw data in DuckDB into clean staging models and analytical marts. Do not work on the ingestion/dlt tasks — those were completed in Lab 1.
 
 ### KEY REQUIREMENTS
 

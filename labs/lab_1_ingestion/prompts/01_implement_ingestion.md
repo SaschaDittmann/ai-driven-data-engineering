@@ -6,7 +6,7 @@ Copy the following prompt into your AI coding assistant:
 
 Use skill: implement-tasks
 
-Read the tasks in `docs/tasks/` and implement all **ingestion-related tasks**. Focus on building the dlt pipeline that extracts data from the PokeAPI and loads it into a local DuckDB database.
+Read the tasks in `docs/tasks/` and implement all **ingestion-related tasks** (everything related to dlt and data extraction/loading). Focus on building the dlt pipeline that extracts data from the PokeAPI and loads it into a local DuckDB database. Do not work on the transformation/dbt tasks — those are for Lab 2.
 
 ### KEY REQUIREMENTS
 
@@ -30,10 +30,13 @@ Read the tasks in `docs/tasks/` and implement all **ingestion-related tasks**. F
 ### TESTING
 
 - Create end-to-end tests in `tests/` using pytest
-- Tests should run the pipeline against the real PokeAPI and verify:
-  - Tables are created in DuckDB
+- Use a separate test database (`data/test_pokedex.db`)
+- Mock/stub PokeAPI responses (using `responses` or `pytest-httpserver`) for fast, offline-capable tests
+- Tests should verify:
+  - Tables are created in the test DuckDB
   - Row counts are greater than zero
   - Key columns exist (e.g., `id`, `name`)
+  - `POKEMON_LIMIT` is respected
 
 ---
 

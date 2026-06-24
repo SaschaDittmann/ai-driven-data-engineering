@@ -48,7 +48,9 @@ Now use the `create-prd` skill to generate a Product Requirements Document. The 
 4. Refine if needed: ask the AI to adjust scope, add details, or restructure sections
 
 **Tips:**
-- Don't just accept the first output — iterate on it like you would with a colleague
+- The AI will ask clarifying questions with recommended defaults — **when in doubt, pick the recommended option**. The prompt file has guidance on sensible answers.
+- Don't overthink the answers — the goal is to practice the *process*, not design the perfect architecture
+- Once the PRD is generated, don't just accept it — iterate on it like you would with a colleague
 - Pay attention to the functional requirements section — this drives the tasks in the next step
 - Make sure the PRD covers both ingestion (dlt) and transformation (dbt) scope
 
