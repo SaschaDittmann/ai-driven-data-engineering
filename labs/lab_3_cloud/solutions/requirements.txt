@@ -1,7 +1,0 @@
-dlt[duckdb,bigquery]
-dbt-core
-dbt-duckdb
-dbt-bigquery
-pytest
-requests
-google-cloud-storage
