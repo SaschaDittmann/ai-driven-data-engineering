@@ -8,7 +8,11 @@ This is a data lakehouse project that ingests data from the PokeAPI, transforms 
 
 - **Always read the PRD in `/docs/prds/`** at the start of a new conversation to understand the project's goals and constraints. Files follow the pattern `prd-<topic>.md`
 - **Check the tasks in `/docs/tasks/`** before starting a new task. Files follow the pattern `tasks-[prd-file-name].md`
-- **Use Context7** (`@mcp:context7`) to retrieve up-to-date documentation for dlt, dbt, DuckDB, and other frameworks
+- **Always use Context7 MCP** to look up framework documentation before implementing. Do not rely solely on training data for API usage — libraries evolve and your knowledge may be outdated. Specifically:
+  - **dlt:** Look up resource decorators, write dispositions, schema evolution, pipeline configuration
+  - **dbt:** Look up dbt-duckdb adapter config, model materialization, schema tests, profiles.yml format
+  - **Terraform:** Look up google_composer_environment, google_bigquery_dataset, and other GCP provider resources
+  - **DuckDB:** Look up SQL dialect differences from PostgreSQL/BigQuery
 
 ## Project Structure
 
