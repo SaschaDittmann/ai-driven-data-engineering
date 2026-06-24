@@ -29,8 +29,8 @@ Same workflow, different tool — that's the point. The context engineering prin
 
 ### Step 1 — Switch to Your IDE Tool (5 min)
 
-1. Open the project in your IDE tool (Antigravity IDE (recommended) or Cursor)
-2. Verify the IDE detects the project rules (`CLAUDE.md`, `AGENTS.md`, or `.cursorrules`)
+1. Open **your project folder** (e.g., `~/my-pokedex-project`) in your IDE tool (Antigravity IDE (recommended) or Cursor). Do **not** open the workshop repo — open the project you created in Lab 0.
+2. Verify the IDE detects the project rules (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, or `.cursorrules`) from your project root
 3. **Verify the raw data exists** — Lab 2 depends on Lab 1's ingested data:
    ```bash
    # Check the database file exists
@@ -110,6 +110,7 @@ Build and test the dbt models.
 | Staging models are too complex | Staging should be simple: `SELECT`, rename, cast. Push logic to the marts layer |
 | STAB calculation is wrong | The rule: if `pokemon.type == move.type`, multiply damage by 1.5. Verify the join logic |
 | AI creates too many models | Focus on the 3 core mart models listed in the checkpoints. Additional models are a nice-to-have |
+| AI doesn't read the PRD or tasks | Make sure you opened your project folder (`~/my-pokedex-project`), not the workshop repo. The IDE agent reads rules from the workspace root |
 | Context7 not providing dbt docs | Ask explicitly: "Use Context7 to look up dbt-duckdb adapter configuration" |
 
 ## Next
