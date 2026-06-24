@@ -1,0 +1,193 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: "{{ 'pokedex_raw' if target.type == 'bigquery' else 'raw' }}"
+    description: Raw tables loaded by dlt from PokeAPI
+    tables:
+      - name: pokemon
+        description: Pokemon detail records from /pokemon endpoint
+      - name: types
+        description: Type catalog with damage relations from /type endpoint
+      - name: moves
+        description: Move catalog from /move endpoint
+      - name: abilities
+        description: Ability catalog from /ability endpoint
+      - name: stats
+        description: Stat definition catalog from /stat endpoint
+      - name: pokemon__stats
+        description: Nested base stats per Pokemon
+      - name: pokemon__types
+        description: Nested type slots per Pokemon
+      - name: pokemon__moves
+        description: Nested learnable moves per Pokemon
+      - name: types__damage_relations__double_damage_to
+        description: Types that take double damage from the attacking type
+      - name: types__damage_relations__half_damage_to
+        description: Types that take half damage from the attacking type
+      - name: types__damage_relations__no_damage_to
+        description: Types immune to the attacking type
+      - name: _dlt_loads
+        description: dlt load metadata with ingestion timestamps
+
+models:
+  - name: stg_pokemon
+    description: Cleaned Pokemon records with core attributes and load timestamp
+    columns:
+      - name: pokemon_id
+        description: Unique Pokemon identifier
+        data_tests:
+          - unique
+          - not_null
+      - name: pokemon_name
+        description: Lowercase Pokemon name
+        data_tests:
+          - not_null
+      - name: base_experience
+        description: Base experience yield when defeated
+      - name: height
+        description: Pokemon height in decimeters
+      - name: weight
+        description: Pokemon weight in hectograms
+      - name: is_default
+        description: Whether this is the default form for the species
+      - name: pokemon_order
+        description: National Pokedex order number
+      - name: species_name
+        description: Species name reference
+      - name: _loaded_at
+        description: Timestamp when the record was loaded by dlt
+
+  - name: stg_types
+    description: Cleaned type lookup records restricted to standard competitive types in downstream marts
+    columns:
+      - name: type_id
+        description: Unique type identifier
+        data_tests:
+          - unique
+          - not_null
+      - name: type_name
+        description: Lowercase type name
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                [
+                  "normal",
+                  "fire",
+                  "water",
+                  "electric",
+                  "grass",
+                  "ice",
+                  "fighting",
+                  "poison",
+                  "ground",
+                  "flying",
+                  "psychic",
+                  "bug",
+                  "rock",
+                  "ghost",
+                  "dragon",
+                  "steel",
+                  "dark",
+                  "fairy",
+                  "unknown",
+                  "shadow",
+                  "stellar",
+                ]
+      - name: generation_name
+        description: Generation when the type was introduced
+      - name: move_damage_class_name
+        description: Physical/special classification for the type (if applicable)
+      - name: dlt_id
+        description: dlt internal row identifier for joining nested child tables
+      - name: _loaded_at
+        description: Timestamp when the record was loaded by dlt
+
+  - name: stg_moves
+    description: Cleaned move catalog with battle-relevant attributes
+    columns:
+      - name: move_id
+        description: Unique move identifier
+        data_tests:
+          - unique
+          - not_null
+      - name: move_name
+        description: Lowercase move name
+        data_tests:
+          - not_null
+      - name: power
+        description: Base power of the move (null for status moves)
+      - name: accuracy
+        description: Accuracy percentage (null for some moves)
+      - name: pp
+        description: Power points available per use
+      - name: priority
+        description: Move priority in turn order
+      - name: move_type
+        description: Elemental type of the move
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_types')
+              field: type_name
+      - name: damage_class
+        description: Damage category (physical, special, or status)
+        data_tests:
+          - accepted_values:
+              values: ["physical", "special", "status"]
+      - name: generation_name
+        description: Generation when the move was introduced
+      - name: _loaded_at
+        description: Timestamp when the record was loaded by dlt
+
+  - name: stg_abilities
+    description: Cleaned ability catalog
+    columns:
+      - name: ability_id
+        description: Unique ability identifier
+        data_tests:
+          - unique
+          - not_null
+      - name: ability_name
+        description: Lowercase ability name
+        data_tests:
+          - not_null
+      - name: is_main_series
+        description: Whether the ability appears in main series games
+      - name: generation_name
+        description: Generation when the ability was introduced
+      - name: _loaded_at
+        description: Timestamp when the record was loaded by dlt
+
+  - name: stg_stats
+    description: Cleaned stat definition catalog
+    columns:
+      - name: stat_id
+        description: Unique stat identifier
+        data_tests:
+          - unique
+          - not_null
+      - name: stat_name
+        description: Lowercase stat name (hp, attack, defense, etc.)
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                [
+                  "hp",
+                  "attack",
+                  "defense",
+                  "special-attack",
+                  "special-defense",
+                  "speed",
+                  "accuracy",
+                  "evasion",
+                  "special",
+                ]
+      - name: game_index
+        description: In-game stat index
+      - name: is_battle_only
+        description: Whether the stat is only used in battle contexts
+      - name: _loaded_at
+        description: Timestamp when the record was loaded by dlt
