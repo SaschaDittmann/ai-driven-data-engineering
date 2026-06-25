@@ -68,7 +68,9 @@ This project ingests data from the [PokeAPI](https://pokeapi.co/api/v2/), transf
 ├── data/               # Local DuckDB database (gitignored)
 ├── docs/
 │   ├── prds/           # Product Requirements Documents
-│   └── tasks/          # Task breakdowns per feature
+│   ├── tasks/          # Task breakdowns per feature
+│   ├── learnings/      # Documented solutions and patterns
+│   └── knowledge/      # Framework docs (e.g., llms-full.txt files for AI context)
 ├── AGENTS.md           # Shared agent instructions (all AI tools)
 ├── CLAUDE.md           # Project rules for Claude Code
 ├── GEMINI.md           # Project rules for Antigravity CLI

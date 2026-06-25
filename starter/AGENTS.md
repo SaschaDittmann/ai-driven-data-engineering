@@ -26,6 +26,7 @@ data/               # Local DuckDB database (gitignored)
 docs/prds/          # Product Requirements Documents
 docs/tasks/         # Task breakdowns per feature
 docs/learnings/     # Documented solutions and patterns
+docs/knowledge/     # Framework and library documentation (e.g., llms-full.txt files)
 ```
 
 ## Tech Stack
