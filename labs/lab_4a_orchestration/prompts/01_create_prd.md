@@ -7,6 +7,8 @@ Act as a Senior Data Engineer. Create a Product Requirements Document (PRD) for 
 
 Use skill: create-prd
 
+Important: The scope below is already well-defined. Only ask clarifying questions about areas that are genuinely ambiguous or missing. If everything is clear, proceed directly to generating the PRD.
+
 FEATURE SCOPE
 
 Add end-to-end pipeline orchestration using Apache Airflow on Managed Service for Apache Airflow (formerly Cloud Composer). The DAG should orchestrate the full data pipeline: dlt ingestion followed by dbt transformation, deployed and running in the cloud.
@@ -24,25 +26,40 @@ DAG Design:
 - Error handling: Retry failed tasks up to 3 times with exponential backoff
 - Set catchup=False to avoid backfilling
 
+dbt Execution Strategy:
+- Use BashOperator for all tasks (simple, portable, good for workshop scope)
+- Do NOT use Cosmos (astronomer-cosmos) — it adds complexity beyond the workshop scope
+- BashOperator commands: "dbt deps", "dbt build --target prod", "dbt docs generate"
+
 Managed Service for Apache Airflow Infrastructure (Terraform):
-- Provision a Managed Service for Apache Airflow 2 environment using Terraform (extend existing infra/ directory)
+- Provision a Managed Service for Apache Airflow environment using Terraform (extend existing infra/ directory)
 - Use ENVIRONMENT_SIZE_SMALL for the workshop
-- Include pypi_packages for dbt-core, dbt-bigquery, dlt[bigquery], and any other dependencies
-- Deploy DAG files to the Airflow GCS bucket via Terraform
-- Configure Airflow Variables via a variables.json uploaded to GCS
+- Use the default Compute Engine service account — do NOT create a custom service account in Terraform
+- Include pypi_packages for dbt-core, dbt-bigquery, dlt[bigquery], requests, and google-cloud-storage
+- Deploy DAG files to the Airflow GCS bucket via Terraform using google_storage_bucket_object
+- Configure Airflow Variables via a variables.json uploaded to GCS data/ folder
+- Import variables via gcloud composer environments run ... variables import (as a Terraform local-exec provisioner)
 
 DAG Deployment:
 - DAG files in dags/ directory
-- Terraform uploads DAGs to the Airflow environment's GCS dags/ folder
-- Airflow Variables stored in a variables.json (project_id, dataset names, pipeline config)
-- Variables imported via gcloud composer environments run ... variables import
+- The dbt project files (models, macros, profiles.yml) should be bundled alongside the DAG in the GCS bucket — do NOT clone from Git at runtime
+- Terraform uploads both DAGs and dbt project files to the Airflow environment's GCS bucket
+
+Airflow Variables (variables.json):
+- gcp_project_id: The GCP project ID
+- gcp_location: The BigQuery/GCS region
+- gcs_bucket_name: The dlt staging bucket name
+- pokemon_limit: Number of Pokemon to ingest (default: 151)
+- pipeline_destination: Set to "bigquery"
+
+Testing:
+- Create a pytest test that validates the DAG file can be parsed without import errors
+- Verify task dependencies are in the correct order
+- No need for full end-to-end Airflow testing in the workshop — manual trigger and monitoring is sufficient
 
 TECHNICAL CONSTRAINTS
 
 - Use Airflow 2.x with Managed Service for Apache Airflow (composer-2-airflow-2 image)
-- For dbt execution: prefer Cosmos (astronomer-cosmos) if available, which creates per-model Airflow tasks with individual retries and visibility. Fall back to BashOperator (dbt build) for simplicity if Cosmos adds too much complexity.
-- Include astronomer-cosmos in pypi_packages if using Cosmos
-- No hardcoded paths, project IDs, or credentials — use Airflow Variables and Connections
-- The Airflow service account needs BigQuery Editor and GCS permissions
-
+- No hardcoded paths, project IDs, or credentials — use Airflow Variables
+- The default Compute Engine service account must have BigQuery Editor and GCS permissions (these are typically granted by default in the workshop playground)
 ~~~
