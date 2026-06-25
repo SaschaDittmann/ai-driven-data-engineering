@@ -13,11 +13,16 @@ Follow this step-by-step workflow for all tasks:
    Use skill: git-worktree
    ```
 
-2. **Search for Past Solutions**
-   Before implementing, check `docs/learnings/` for relevant past solutions:
-   - Extract keywords from the task description
-   - Search for matching files in `docs/learnings/`
-   - Read relevant learnings to avoid repeated mistakes
+2. **Search for Past Solutions and Information about frameworks, tools, and other resources**
+   Before implementing features or fixing problems, search for past solutions to surface knowledge and prevent repeated mistakes.
+   The `docs/learnings/` directory contains documented solutions. There might be hundreds of files, so use an effective strategy that minimizes tool calls such as:
+   - Extract keywords from feature and description
+   - Search with those keywords to find files
+   - Read the content of those files
+   The `docs/knowledge/` directory contains knowledge about frameworks, libraries, and other resources used in the project. There might be large files in this directory, so use an effective strategy that minimizes tool calls such as:
+   - Extract keywords from feature and description
+   - Search with those keywords to find files
+   - Read the content of those files
 
 3. **Read the Task List**
    - Open the relevant task file in `docs/tasks/`
