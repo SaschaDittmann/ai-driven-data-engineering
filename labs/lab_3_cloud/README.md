@@ -57,31 +57,41 @@ Use the prompt from [`prompts/03_implement_cloud.md`](prompts/03_implement_cloud
 
 ### Step 4 — Deploy to GCP (10 min)
 
-1. Apply the Terraform:
+1. Configure Terraform variables — copy the example file and fill in your GCP project details:
    ```bash
    cd infra
+   cp terraform.tfvars.example terraform.auto.tfvars
+   ```
+   Edit `terraform.auto.tfvars` and set the correct values:
+   ```hcl
+   project_id  = "your-gcp-project-id"       # from the GCP Playground
+   region      = "us-central1"                # or your preferred region
+   bucket_name = "your-unique-dlt-staging-bucket"  # must be globally unique
+   ```
+2. Apply the Terraform:
+   ```bash
    terraform init
    terraform plan
    terraform apply
    ```
-2. Set the environment variables from the Terraform outputs:
+3. Set the environment variables from the Terraform outputs:
    ```bash
    export PIPELINE_DESTINATION=bigquery
    export GCS_BUCKET_URL=$(terraform output -raw dlt_staging_bucket_url)
    export GCP_PROJECT=$(terraform output -raw project_id)
    export GCP_LOCATION=$(terraform output -raw region)
    ```
-3. Run the dlt pipeline targeting BigQuery:
+4. Run the dlt pipeline targeting BigQuery:
    ```bash
    cd ..
    uv run python ingestion/pipeline.py
    ```
-4. Run dbt against BigQuery:
+5. Run dbt against BigQuery:
    ```bash
    cd transform
    dbt build --target prod
    ```
-5. Verify data in BigQuery — ask the AI to help you query it
+6. Verify data in BigQuery — ask the AI to help you query it
 
 ### Step 5 — Document Learnings (5 min)
 

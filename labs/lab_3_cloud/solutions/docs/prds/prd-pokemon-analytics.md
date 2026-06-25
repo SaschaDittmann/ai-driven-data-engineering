@@ -100,36 +100,49 @@ Build an automated, robust data pipeline that ingests data from the PokeAPI, han
     - Foreign key constraints (e.g., move types map back to valid types).
     - Categorical bounds (e.g., damage multipliers are strictly within `[0.0, 0.5, 1.0, 2.0]`).
 
----
-
 ### Feature 3: Cloud Deployment (GCP)
 
 - **FR-3.1: Infrastructure as Code (Terraform)**
-  - Use Terraform to provision all GCP resources.
-  - The Terraform configuration must create:
-    - Three BigQuery datasets: `pokedex_raw`, `pokedex_staging`, and `pokedex_marts`.
-    - A GCS bucket for `dlt` staging files.
-    - Necessary IAM bindings (if applicable).
+  - All GCP resources must be provisioned declaratively using Terraform.
+  - The Terraform configuration (stored in `infra/`) must create:
+    - **BigQuery datasets**: `pokedex_raw`, `pokedex_staging`, and `pokedex_marts` — mirroring the local medallion architecture.
+    - **GCS bucket**: A staging bucket used by dlt for intermediate file staging during BigQuery loads.
+    - **IAM bindings**: Necessary service account permissions for BigQuery data editor and GCS object admin roles (if applicable).
+  - Terraform state should be managed locally for now (no remote backend required).
 
-- **FR-3.2: Production Data Warehouse (BigQuery)**
-  - Google BigQuery serves as the production destination for the medallion data pipeline.
+- **FR-3.2: Dual-Destination Pipeline (dlt)**
+  - The dlt ingestion pipeline must support two destinations:
+    - **DuckDB** (dev): The default local destination, used for development and testing. Controlled by `DESTINATION=duckdb` or when the variable is unset.
+    - **BigQuery** (prod): The cloud destination for production deployments. Controlled by `DESTINATION=bigquery`.
+  - Destination selection must be driven by the `DESTINATION` environment variable.
+  - When targeting BigQuery, dlt must use the GCS bucket (provisioned by Terraform) as a staging location for efficient bulk loads.
+  - All existing pipeline behavior (idempotent merges, schema evolution, `POKEMON_LIMIT`) must be preserved regardless of destination.
 
-- **FR-3.3: Ingestion Staging (GCS)**
-  - A Google Cloud Storage (GCS) bucket must be used as the staging storage for the `dlt` pipeline when loading data into BigQuery.
+- **FR-3.3: dbt Production Target (BigQuery)**
+  - Add a `prod` target to `profiles.yml` using the `dbt-bigquery` adapter.
+  - The `prod` target must connect to the Terraform-provisioned BigQuery datasets.
+  - All existing staging and marts models must run successfully against BigQuery without SQL dialect changes (or with minimal, adapter-handled differences).
+  - The existing `dev` target (dbt-duckdb) must remain the default and continue to work unchanged.
 
-- **FR-3.4: Dual-Destination Support**
-  - The pipeline must support both DuckDB (dev) and BigQuery (prod) destinations, controlled dynamically via environment variables.
-  - In `dlt`, BigQuery must be configured as an alternative destination, active when the environment variable is set to target prod.
-  - The `dbt` project must add a `prod` target in `profiles.yml` using the `dbt-bigquery` adapter.
-  - Existing end-to-end tests must continue to run and pass successfully against the DuckDB (dev) destination.
+- **FR-3.4: Configuration & Environment Variables**
+  - The following environment variables must control cloud behavior:
+    - `DESTINATION`: Controls dlt destination (`duckdb` | `bigquery`). Defaults to `duckdb`.
+    - `GCP_PROJECT_ID`: The Google Cloud project ID for BigQuery and GCS.
+    - `GCP_LOCATION`: The GCP region for resource deployment (e.g., `us-central1`).
+    - `GCS_BUCKET_NAME`: The GCS bucket name for dlt staging.
+  - A `.env.example` file must document all required environment variables.
+
+- **FR-3.5: Backward Compatibility**
+  - The default developer experience must remain unchanged — running the pipeline without setting any cloud-related environment variables must continue to use DuckDB locally.
+  - All existing end-to-end tests must continue to pass against DuckDB without modification.
 
 ---
 
 ## 5. Non-Goals
 
-- **Orchestration (Airflow)**: Workflow scheduling or orchestration (e.g., Apache Airflow, Cloud Composer) is out of scope and deferred to a separate feature.
-- **CI/CD Pipeline**: Automated CI/CD pipelines (e.g., GitHub Actions, Cloud Build) are out of scope for now.
-- **Multi-Environment GCP Setup**: A multi-environment cloud setup (e.g., separate dev/staging/prod GCP projects) is out of scope. The pipeline targets a single production deployment on Google Cloud.
+- **Workflow Orchestration**: Scheduling/Orchestration via Airflow or Cloud Composer is deferred to a separate feature.
+- **CI/CD Pipeline**: Automated build, test, and deployment pipelines are out of scope for now.
+- **Multi-Environment Deployment**: Only a single production deployment is supported. Separate dev/staging/prod GCP environments are deferred.
 - **Downstream Application**: Building the Streamlit dashboard or user interface is deferred.
 - **Dual-Type Effectiveness Computations**: Complex calculations combining defensive multipliers for dual-type Pokemon (e.g., a Fire/Flying Pokemon taking 4x damage from Rock) are out of scope. The single-type 18x18 matrix is sufficient.
 - **Detailed Battle Mechanics**: Items, Natures, Effort Values (EVs), Individual Values (IVs), or status condition calculations are not included.
@@ -141,18 +154,34 @@ Build an automated, robust data pipeline that ingests data from the PokeAPI, han
 ### Medallion Data Flow
 ```mermaid
 graph TD
-    API[PokeAPI] -->|dlt Ingest| Raw["raw schema / BQ dataset"]
-    Raw -->|dbt stage| Stg["staging schema / BQ dataset"]
-    Stg -->|dbt transform| Marts["marts schema / BQ dataset"]
+    API[PokeAPI] -->|dlt Ingest| Raw[raw schema]
+    Raw -->|dbt stage| Stg[staging schema]
+    Stg -->|dbt transform| Marts[marts schema]
     Marts -->|SQL Analysis| Analyst[Downstream Consumers]
 ```
 
-### Relational Schema & Dataset Layout
-The pipeline supports two destinations:
-1. **Local Dev (DuckDB)**: Resides in `data/pokedex.db` using schemas `raw`, `staging`, and `marts`.
-2. **Production Cloud (BigQuery)**: Resides in the specified GCP project under datasets `pokedex_raw`, `pokedex_staging`, and `pokedex_marts`.
-   - In production, `dlt` loads raw tables into the `pokedex_raw` dataset, using a GCS bucket for staging temporary load files.
-   - `dbt` builds staging models in `pokedex_staging` and analytical models in `pokedex_marts`.
+### Dual-Destination Architecture
+```mermaid
+graph TD
+    API[PokeAPI] -->|dlt| Switch{DESTINATION env var}
+    Switch -->|duckdb| DuckDB["DuckDB (dev)\ndata/pokedex.db"]
+    Switch -->|bigquery| GCS["GCS Staging Bucket"]
+    GCS -->|dlt load| BQ["BigQuery (prod)"]
+    DuckDB -->|dbt dev target| DuckDBSchemas["raw → staging → marts"]
+    BQ -->|dbt prod target| BQDatasets["pokedex_raw → pokedex_staging → pokedex_marts"]
+```
+
+### Relational Schema Layout
+
+**DuckDB (dev)** — All schemas reside in `data/pokedex.db`:
+- **`raw`**: Houses raw tables outputted directly by dlt (e.g., `raw.pokemon`, `raw.pokemon__stats`, `raw.pokemon__types`, `raw.move`, etc.).
+- **`staging`**: Cleaned, documented, 1-to-1 views representing standard models (`stg_pokemon`, `stg_moves`, `stg_types`).
+- **`marts`**: Highly structured tables containing flattened and pre-calculated matrices (`fct_pokemon_stats`, `dim_type_effectiveness`, `fct_competitive_moves`).
+
+**BigQuery (prod)** — Separate datasets in the GCP project:
+- **`pokedex_raw`**: Raw dlt output loaded via GCS staging.
+- **`pokedex_staging`**: Cleaned staging models.
+- **`pokedex_marts`**: Analytical marts for downstream consumption.
 
 ---
 
@@ -162,23 +191,26 @@ The pipeline supports two destinations:
 - **Python**: 3.11+
 - **Environment & Dependency Manager**: `uv`
 - **Primary Dependencies**:
-  - `dlt[duckdb,bigquery]` (data ingestion engine supporting DuckDB and BigQuery)
-  - `dbt-core`, `dbt-duckdb`, and `dbt-bigquery` (data transformation engines)
-  - `google-cloud-storage` (GCP staging bucket support)
+  - `dlt[duckdb]` (data ingestion — DuckDB destination)
+  - `dlt[bigquery]` (data ingestion — BigQuery destination)
+  - `dbt-core` & `dbt-duckdb` (data transformation — dev)
+  - `dbt-bigquery` (data transformation — prod)
   - `requests` (HTTP client library for dlt resources)
   - `pytest` & `responses` / `pytest-httpserver` (testing suite)
-  - `terraform` (Infrastructure as Code)
+- **Infrastructure**:
+  - `terraform` >= 1.5 (GCP resource provisioning)
+  - Google Cloud SDK (`gcloud`) for authentication
 
 ### Testing Strategy
 - Tests must be executable completely offline without communicating with the live PokeAPI.
-- Use a dedicated test database: `data/test_pokedex.db` for local DuckDB runs.
+- Use a dedicated test database: `data/test_pokedex.db`.
 - Mock PokeAPI JSON payloads using `responses` or `pytest-httpserver`. Mock fixtures must be stored locally under the `tests/` directory.
 - Pytest must validate:
   - Tables are successfully populated in the test DuckDB.
   - Ingestion respects the `POKEMON_LIMIT` configuration (e.g., testing with a limit of 5 Pokemon).
   - Row counts for primary tables are greater than 0.
   - Essential fields (like stats, STAB adjusted power, and damage multipliers) are correctly calculated.
-- Local tests run and validate the pipeline against the local DuckDB destination to ensure dev cycles remain fast and offline-capable.
+- All existing tests must continue to pass against DuckDB — BigQuery integration is validated manually or via a separate test suite in a later feature.
 
 ---
 
@@ -188,6 +220,9 @@ The pipeline supports two destinations:
 - **Performance**: High-level analytical queries against `marts` tables execute in less than 500ms on the local DuckDB database.
 - **Testing Standard**: 100% pass rate on all pytest unit/integration tests and all configured dbt assertions.
 - **Coverage**: The `dim_type_effectiveness` matrix contains exactly 324 rows mapping all relationships between the 18 standard types.
+- **Terraform Apply**: `terraform apply` completes without errors and provisions all three BigQuery datasets and the GCS staging bucket.
+- **Dual-Destination Parity**: Running the full pipeline with `DESTINATION=bigquery` followed by `dbt build --target prod` produces the same row counts and schema structure as the DuckDB dev path.
+- **Backward Compatibility**: Running the pipeline without any cloud environment variables behaves identically to the pre-Feature 3 baseline.
 
 ---
 
@@ -199,3 +234,9 @@ The pipeline supports two destinations:
   - *Decided Behavior*: The matrix `dim_type_effectiveness` will filter down strictly to the standard 18 types. Non-standard types present in the API payload will be ignored.
 - **Q: What constitutes a primary vs secondary type?**
   - *Decided Behavior*: Pokemon types returned by PokeAPI are ordered. The entry with `slot = 1` is designated as the primary type, and `slot = 2` (if it exists) is the secondary type.
+- **Q: How should GCP authentication work for dlt and dbt?**
+  - *Decided Behavior*: Both dlt and dbt will use Application Default Credentials (ADC) via `gcloud auth application-default login`. No service account key files should be committed to the repository.
+- **Q: Should Terraform manage the GCP project itself?**
+  - *Decided Behavior*: No. The GCP project must exist before running Terraform. The project ID is passed in as a Terraform variable (`gcp_project_id`).
+- **Q: What BigQuery location should be used?**
+  - *Decided Behavior*: The location defaults to `us-central1` but is configurable via the `GCP_LOCATION` environment variable and corresponding Terraform variable.
