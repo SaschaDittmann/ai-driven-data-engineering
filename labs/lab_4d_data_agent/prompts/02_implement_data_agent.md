@@ -7,6 +7,8 @@ Use skill: implement-tasks
 
 Read the data agent tasks in docs/tasks/ and implement the ADK-based data agent.
 
+Important: Before implementing, read the Google ADK documentation in docs/knowledge/google-adk.txt for API patterns, agent configuration, and tool setup. This file contains the latest ADK documentation.
+
 KEY REQUIREMENTS
 
 - Framework: Google Agent Development Kit (google-adk)

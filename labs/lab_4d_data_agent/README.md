@@ -29,13 +29,24 @@ This is the capstone of the workshop: you built the data platform, now you make 
 
 ## Steps
 
-### Step 1 — Create a PRD for the Data Agent (10 min)
+### Step 1 — Download ADK Documentation (2 min)
+
+Download the Google ADK documentation so your AI tool can reference it during implementation:
+
+```bash
+mkdir -p docs/knowledge
+curl -o docs/knowledge/google-adk.txt https://adk.dev/llms-full.txt
+```
+
+This file is used by the `implement-tasks` skill to look up ADK APIs and patterns.
+
+### Step 2 — Create a PRD for the Data Agent (10 min)
 
 1. Copy the prompt from [`prompts/01_create_prd.md`](prompts/01_create_prd.md) into your AI assistant
 2. Answer clarifying questions based on the prompt guidance
 3. Review the generated PRD
 
-### Step 2 — Create Tasks and Implement (40–50 min)
+### Step 3 — Create Tasks and Implement (40–50 min)
 
 1. Use `create-tasks` to generate task breakdowns
 2. Create a feature branch with `git-worktree`
@@ -46,7 +57,7 @@ This is the capstone of the workshop: you built the data platform, now you make 
    - A runner script to interact with the agent locally
    - Optionally: BigQuery Agent Analytics plugin for logging agent events
 
-### Step 3 — Run and Test (10–15 min)
+### Step 4 — Run and Test (10–15 min)
 
 1. Start the agent:
    ```bash
