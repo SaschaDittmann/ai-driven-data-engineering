@@ -29,21 +29,37 @@ Implementation notes:
 - Add DAG documentation (doc_md) explaining what the pipeline does
 - No hardcoded credentials — use Airflow Variables and environment
 
-2. TERRAFORM FOR CLOUD COMPOSER
+2. TERRAFORM FOR MANAGED AIRFLOW
 
-Extend the existing infra/ directory with Managed Service for Apache Airflow resources:
+Extend the existing infra/ directory:
 
 infra/
 ├── ... (existing BigQuery, GCS files)
-├── composer.tf          # Managed Service for Apache Airflow environment
-├── composer_iam.tf      # Service account and IAM for the Airflow environment
-└── composer_network.tf  # VPC network for the Airflow environment (if needed)
+├── apis.tf              # Enable required GCP APIs (composer, compute, container, etc.)
+├── composer_network.tf  # Dedicated VPC network and subnet for Composer
+├── composer_iam.tf      # Composer Service Agent IAM binding
+├── composer.tf          # Composer environment + DAG/dbt deployment + variables
 
-Requirements:
+GCP APIs (apis.tf):
+- Enable: composer, compute, container, monitoring, logging, cloudresourcemanager
+- Use google_project_service with disable_on_destroy = false
+
+Networking (composer_network.tf):
+- Create a VPC network (google_compute_network) for Composer
+- Create a subnet (google_compute_subnetwork) with secondary IP ranges for GKE pods/services
+
+IAM (composer_iam.tf):
+- Grant roles/composer.ServiceAgentV2Ext to the Composer Service Agent
+- Use data.google_project to look up the project number
+
+Environment (composer.tf):
 - Managed Service for Apache Airflow with image_version "composer-2-airflow-2"
 - ENVIRONMENT_SIZE_SMALL
-- pypi_packages: dbt-core, dbt-bigquery, dlt[bigquery], requests
+- node_config with explicit service_account and the VPC network/subnet
+- pypi_packages: dbt-core, dbt-bigquery, dlt[bigquery], requests, google-cloud-storage
+- depends_on: APIs, IAM, and networking must be created first
 - Upload DAG files from dags/ to the Airflow GCS bucket using google_storage_bucket_object
+- Upload dbt project and ingestion scripts to dags/ subdirectories
 - Create a variables.json with project config and upload to Airflow GCS data/ folder
 - Import variables via a local-exec provisioner: gcloud composer environments run ... variables import
 

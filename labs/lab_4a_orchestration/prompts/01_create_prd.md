@@ -31,11 +31,28 @@ dbt Execution Strategy:
 - Do NOT use Cosmos (astronomer-cosmos) — it adds complexity beyond the workshop scope
 - BashOperator commands: "dbt deps", "dbt build --target prod", "dbt docs generate"
 
+GCP APIs (Terraform):
+- Enable all APIs that Cloud Composer depends on before creating the environment:
+  - composer.googleapis.com
+  - compute.googleapis.com
+  - container.googleapis.com (GKE, used internally by Composer 2)
+  - monitoring.googleapis.com
+  - logging.googleapis.com
+  - cloudresourcemanager.googleapis.com
+- Use google_project_service resources with disable_on_destroy = false
+
+Networking (Terraform):
+- Create a dedicated VPC network and subnet for the Composer environment
+- The subnet needs a secondary IP range for GKE pods and services (Composer 2 runs on GKE internally)
+- Reference this VPC/subnet in the Composer environment's node_config
+
 Managed Service for Apache Airflow Infrastructure (Terraform):
 - Provision a Managed Service for Apache Airflow environment using Terraform (extend existing infra/ directory)
 - Use ENVIRONMENT_SIZE_SMALL for the workshop
-- Use the default Compute Engine service account — do NOT create a custom service account in Terraform
+- Use the default Compute Engine service account — specify it explicitly in node_config as {project-number}-compute@developer.gserviceaccount.com
+- Grant the Composer Service Agent the roles/composer.ServiceAgentV2Ext role
 - Include pypi_packages for dbt-core, dbt-bigquery, dlt[bigquery], requests, and google-cloud-storage
+- Set depends_on to ensure APIs, IAM bindings, and networking are created before the Composer environment
 - Deploy DAG files to the Airflow GCS bucket via Terraform using google_storage_bucket_object
 - Configure Airflow Variables via a variables.json uploaded to GCS data/ folder
 - Import variables via gcloud composer environments run ... variables import (as a Terraform local-exec provisioner)
