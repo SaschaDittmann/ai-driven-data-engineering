@@ -212,6 +212,9 @@ worktrees/
 # Workshop internal docs
 docs/brainstorming.md
 
+# OS
+.DS_Store
+
 # Misc
 data/
 tmp/
